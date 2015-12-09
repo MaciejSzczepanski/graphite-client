@@ -1,35 +1,31 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Graphite.System
 {
-    internal class AppPoolListener
+    public class AppPoolListener
     {
         private readonly string appPoolName;
         private readonly string category;
         private readonly string counter;
+        private readonly ICounterNameProvider _counterNameProvider;
 
         private string counterName;
 
         private CounterListener counterListener;
 
-        public AppPoolListener(string appPoolName, string category, string counter)
+        public AppPoolListener(string appPoolName, string category, string counter, ICounterNameProvider counterNameProvider)
         {
             this.appPoolName = appPoolName;
             this.category = category;
             this.counter = counter;
+            _counterNameProvider = counterNameProvider;
 
             this.LoadCounterName();
         }
         
         public bool LoadCounterName()
         {
-            string newName = this.GetCounterName(this.appPoolName);
+            string newName = _counterNameProvider.GetCounterName(this.appPoolName);
 
             if (!string.IsNullOrEmpty(newName) && this.counterName != newName)
             {
@@ -83,95 +79,8 @@ namespace Graphite.System
             }
         }
 
-        private string GetCounterName(string appPool)
-        {
-            string result;
+     
 
-            this.Execute("list WP", out result, 1000);
-
-            var match = Regex.Match(
-                result, 
-                "WP \"(?<id>[0-9]+)\" \\(applicationPool:" + Regex.Escape(appPool) + "\\)", 
-                RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-            int processId;
-
-            if (match.Success && match.Groups["id"].Success && int.TryParse(match.Groups["id"].Value, out processId))
-            {
-                return this.ProcessNameById("w3wp", processId);
-            }
-
-            return null;
-        }
-
-        private string ProcessNameById(string prefix, int processId)
-        {
-            var localCategory = new PerformanceCounterCategory("Process");
-
-            string[] instances = localCategory.GetInstanceNames()
-                .Where(p => p.StartsWith(prefix))
-                .ToArray();
-
-            foreach (string instance in instances)
-            {
-                using (var localCounter = new PerformanceCounter("Process", "ID Process", instance, true))
-                {
-                    long val = localCounter.RawValue;
-
-                    if (val == processId)
-                    {
-                        return instance;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private bool Execute(string arguments, out string result, int maxMilliseconds = 30000)
-        {
-            string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.System);
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = Path.Combine(systemPath, "inetsrv\\appcmd.exe"),
-                Arguments = arguments,
-
-                RedirectStandardOutput = true,
-
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            };
-
-            var standardOut = new StringBuilder();
-
-            Process p = Process.Start(startInfo);
-
-            p.OutputDataReceived += (s, d) => standardOut.AppendLine(d.Data);
-            p.BeginOutputReadLine();
-
-            bool success = p.WaitForExit(maxMilliseconds);
-            p.CancelOutputRead();
-
-            if (!success)
-            {
-                try
-                {
-                    p.Kill();
-                }
-                catch (Win32Exception)
-                {
-                    // unable to kill the process
-                }
-                catch (InvalidOperationException)
-                {
-                    // process already stopped
-                }
-            }
-
-            result = standardOut.ToString();
-
-            return success;
-        }
+       
     }
 }

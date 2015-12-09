@@ -131,8 +131,10 @@
     <Compile Include="Configuration\EventlogListenerElementCollection.cs" />
     <Compile Include="Configuration\AppPoolElement.cs" />
     <Compile Include="Configuration\AppPoolElementCollection.cs" />
+    <Compile Include="CounterNameProvider.cs" />
     <Compile Include="EventlogListener.cs" />
     <Compile Include="Explorer.cs" />
+    <Compile Include="ICounterNameProvider.cs" />
     <Compile Include="Inspector.cs" />
     <Compile Include="Kernel.cs" />
     <Compile Include="CounterListener.cs" />

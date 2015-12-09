@@ -26,6 +26,9 @@ namespace Graphite.System
 
         private bool disposed;
 
+        private ICounterNameProvider _counterNameProvider = new AppCmdCounterNameProvider();
+
+
         public Kernel(IConfigurationContainer configuration, GraphiteSystemConfiguration systemConfiguration)
         {
             this.factory = new ChannelFactory(configuration.Graphite, configuration.StatsD);
@@ -146,11 +149,11 @@ namespace Graphite.System
 
             if (config.WorkingSet && string.IsNullOrEmpty(config.Counter))
             {
-                element = new AppPoolListener(config.AppPoolName, "Process", "Working Set");
+                element = new AppPoolListener(config.AppPoolName, "Process", "Working Set", _counterNameProvider);
             } 
             else if (!string.IsNullOrEmpty(config.Counter))
             {
-                element = new AppPoolListener(config.AppPoolName, config.Category, config.Counter);
+                element = new AppPoolListener(config.AppPoolName, config.Category, config.Counter, _counterNameProvider);
             }
 
             listener = element;
