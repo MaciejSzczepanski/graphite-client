@@ -9,7 +9,7 @@
     <xs:sequence>
       <xs:element minOccurs="0" name="counters" type="tns:Graphite.System.Configuration.CounterListenerElementCollection" />
       <xs:element minOccurs="0" name="eventlog" type="tns:Graphite.System.Configuration.EventlogListenerElementCollection" />
-      <xs:element minOccurs="0" name="appPool" type="tns:Graphite.System.Configuration.AppPoolElementCollection" />
+      <xs:element minOccurs="0" name="poolName" type="tns:Graphite.System.Configuration.AppPoolElementCollection" />
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="Graphite.System.Configuration.CounterListenerElementCollection">
@@ -84,7 +84,7 @@
   </xs:complexType>
   <xs:complexType name="Graphite.System.Configuration.AppPoolElement">
     <xs:attribute name="key" use="required" type="xs:string"/>
-    <xs:attribute name="appPoolName" use="required" type="xs:string"/>
+    <xs:attribute name="poolNameName" use="required" type="xs:string"/>
     <xs:attribute name="workingSet" use="optional" type="xs:boolean"/>
     <xs:attribute name="type" use="required" type="xs:string"/>
     <xs:attribute name="target" use="required" type="xs:string"/>

@@ -17,15 +17,15 @@ namespace Graphite.System
 
 
 
-        public string GetCounterName(string appPool)
+        public virtual string GetCounterName(string poolName)
         {
-            if (_instanceNameByPoolName.ContainsKey(appPool))
-                return _instanceNameByPoolName[appPool];
+            if (_instanceNameByPoolName.ContainsKey(poolName))
+                return _instanceNameByPoolName[poolName];
 
-            string instanceName = ProcessNameById("w3wp", GetProcessId(appPool));
+            string instanceName = ProcessNameById("w3wp", GetProcessId(poolName));
 
             if(instanceName != null)
-                _instanceNameByPoolName.Add(appPool,instanceName);
+                _instanceNameByPoolName.Add(poolName,instanceName);
             
             return instanceName;
         }

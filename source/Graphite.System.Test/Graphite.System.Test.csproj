@@ -61,6 +61,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestablePerfCounter.cs" />
     <Compile Include="TestablePerformanceCounterFactory.cs" />
+    <Compile Include="TestableWmiCounterNameProvider.cs" />
     <Compile Include="WmiCounterNameProviderTest.cs" />
   </ItemGroup>
   <ItemGroup>
