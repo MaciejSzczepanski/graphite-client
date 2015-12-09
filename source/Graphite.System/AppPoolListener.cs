@@ -25,7 +25,19 @@ namespace Graphite.System
 
             this.LoadCounterName();
         }
-        
+
+        public string CategoryName { get { return category; } }
+
+        public string AppPoolName
+        {
+            get { return appPoolName; }
+        }
+
+        public string Counter
+        {
+            get { return counter; }
+        }
+
         public bool LoadCounterName()
         {
             string newName = _counterNameProvider.GetCounterName(this.appPoolName);

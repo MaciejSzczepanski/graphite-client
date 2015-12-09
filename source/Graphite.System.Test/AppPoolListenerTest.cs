@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Should.Fluent;
 using Xunit;
 
 namespace Graphite.System.Test
@@ -30,17 +31,39 @@ namespace Graphite.System.Test
         public void ReportValue_Retrieves_a_value()
         {
             //given
-            var poolName = "test";
-            var instanceName = "w3wp#1";
-            _counterNameProvider.Register(poolName,instanceName);
-            AppPoolListener listener = CreateAppPoolListener(poolName, "Process", "Working Set");
+            var m = _counterNameProvider.Register("test", "w3wp#1");
+            AppPoolListener listener = CreateAppPoolListener(m.PoolName, "Process", "Working Set");
 
             //when
             var value = listener.ReportValue();
 
             //then
-            Assert.True(_counterFactory.CreatedCounters.All(p => p.CategoryName == "Process" && p.InstanceName == instanceName));
-           
+            Assert.True(_counterFactory.CreatedCounters.All(p => p.CategoryName == listener.CategoryName && p.CounterName == listener.Counter && p.InstanceName == m.InstanceName));
+
+        }
+
+        [Fact]
+        public void when_instancename_has_changed_apppool_listener_should_swich_to_new_perfcounter()
+        {
+            //given
+            var m = _counterNameProvider.Register("test", "w3wp#1");
+            
+            var listener = CreateAppPoolListener(m.PoolName, "Process", "Working Set");
+
+            var someValue = listener.ReportValue();
+
+            //counter becomes invalid
+            _counterFactory.CreatedCounters.Last().MarkAsInvalid();
+
+            //pool is now in different process
+            m = _counterNameProvider.Register("test", "w3wp#2");
+
+            //when
+            var value2 = listener.ReportValue();
+
+            //then
+            value2.Should().Not.Be.Null();
+
         }
     }
 }
