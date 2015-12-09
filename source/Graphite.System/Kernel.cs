@@ -5,6 +5,7 @@ using System.Linq;
 using Graphite.Configuration;
 using Graphite.Infrastructure;
 using Graphite.System.Configuration;
+using Graphite.System.Perfcounters;
 
 namespace Graphite.System
 {
@@ -27,7 +28,7 @@ namespace Graphite.System
         private bool disposed;
 
         private ICounterNameProvider _counterNameProvider = new AppCmdCounterNameProvider();
-
+        private PerformanceCounterFactory _counterFactory = new PerformanceCounterFactory();
 
         public Kernel(IConfigurationContainer configuration, GraphiteSystemConfiguration systemConfiguration)
         {
@@ -116,7 +117,7 @@ namespace Graphite.System
 
         private Action CreateReportingAction(CounterListenerElement config)
         {
-            CounterListener listener = new CounterListener(config.Category, config.Instance, config.Counter);
+            CounterListener listener = new CounterListener(config.Category, config.Instance, config.Counter, _counterFactory);
             
             IMonitoringChannel channel;
 
@@ -149,11 +150,11 @@ namespace Graphite.System
 
             if (config.WorkingSet && string.IsNullOrEmpty(config.Counter))
             {
-                element = new AppPoolListener(config.AppPoolName, "Process", "Working Set", _counterNameProvider);
+                element = new AppPoolListener(config.AppPoolName, "Process", "Working Set", _counterNameProvider, _counterFactory);
             } 
             else if (!string.IsNullOrEmpty(config.Counter))
             {
-                element = new AppPoolListener(config.AppPoolName, config.Category, config.Counter, _counterNameProvider);
+                element = new AppPoolListener(config.AppPoolName, config.Category, config.Counter, _counterNameProvider, _counterFactory);
             }
 
             listener = element;

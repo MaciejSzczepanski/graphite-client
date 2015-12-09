@@ -1,4 +1,5 @@
 ﻿using System;
+using Graphite.System.Perfcounters;
 
 namespace Graphite.System
 {
@@ -8,17 +9,19 @@ namespace Graphite.System
         private readonly string category;
         private readonly string counter;
         private readonly ICounterNameProvider _counterNameProvider;
+        private readonly PerformanceCounterFactory _counterFactory;
 
         private string counterName;
 
         private CounterListener counterListener;
 
-        public AppPoolListener(string appPoolName, string category, string counter, ICounterNameProvider counterNameProvider)
+        public AppPoolListener(string appPoolName, string category, string counter, ICounterNameProvider counterNameProvider, PerformanceCounterFactory counterFactory)
         {
             this.appPoolName = appPoolName;
             this.category = category;
             this.counter = counter;
             _counterNameProvider = counterNameProvider;
+            _counterFactory = counterFactory;
 
             this.LoadCounterName();
         }
@@ -54,7 +57,7 @@ namespace Graphite.System
             {
                 try
                 {
-                    this.counterListener = new CounterListener(category, this.counterName, counter);
+                    this.counterListener = new CounterListener(category, this.counterName, counter, _counterFactory);
                 }
                 catch (InvalidOperationException)
                 { 

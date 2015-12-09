@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Graphite.System.Perfcounters;
 using Xunit;
 
 namespace Graphite.System.Test
@@ -21,7 +22,7 @@ namespace Graphite.System.Test
         public void ReportValue_Retrieves_a_value()
         {
             //given
-            AppPoolListener listener = new AppPoolListener("DefaultAppPool", "Process", "Working Set", new WmiCounterNameProvider());
+            AppPoolListener listener = new AppPoolListener("test", "Process", "Working Set", new WmiCounterNameProvider(), new PerformanceCounterFactory());
 
             //when
             var value = listener.ReportValue();

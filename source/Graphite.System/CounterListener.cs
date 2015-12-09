@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Diagnostics;
+using Graphite.System.Perfcounters;
 
 namespace Graphite.System
 {
     internal class CounterListener : IDisposable
     {
-        private PerformanceCounter counter;
+        private readonly PerformanceCounterFactory _counterFactory;
+        private IPerformanceCounter counter;
         
         private bool disposed;
 
-        public CounterListener(string category, string instance, string counter)
+        public CounterListener(string category, string instance, string counter, PerformanceCounterFactory counterFactory)
         {
+            _counterFactory = counterFactory;
             try
             {
-                this.counter = new PerformanceCounter(category, counter, instance);
+                this.counter = _counterFactory.Create(category, counter, instance);
                 this.counter.Disposed += (sender, e) => this.disposed = true;
 
                 // First call to NextValue returns always 0 -> perforn it without taking value.
@@ -77,9 +80,9 @@ namespace Graphite.System
 
         protected virtual void RenewCounter()
         {
-            this.counter = new PerformanceCounter(this.counter.CategoryName,
+            this.counter = _counterFactory.Create(this.counter.CategoryName,
                 this.counter.CounterName,
-                this.counter.InstanceName);
+                this.counter.InstanceName) ;
 
             this.counter.Disposed += (sender, e) => this.disposed = true;
 
