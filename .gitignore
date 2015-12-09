@@ -22,3 +22,4 @@ StyleCop.Cache
 /source/.JustCode
 /dist/
 /nuget-archive/
+source/.vs/
