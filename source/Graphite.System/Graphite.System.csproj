@@ -115,6 +115,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -131,7 +132,7 @@
     <Compile Include="Configuration\EventlogListenerElementCollection.cs" />
     <Compile Include="Configuration\AppPoolElement.cs" />
     <Compile Include="Configuration\AppPoolElementCollection.cs" />
-    <Compile Include="CounterNameProvider.cs" />
+    <Compile Include="AppCmdCounterNameProvider.cs" />
     <Compile Include="EventlogListener.cs" />
     <Compile Include="Explorer.cs" />
     <Compile Include="ICounterNameProvider.cs" />
@@ -153,6 +154,7 @@
     <Compile Include="WindowsService.designer.cs">
       <DependentUpon>WindowsService.cs</DependentUpon>
     </Compile>
+    <Compile Include="WmiCounterNameProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Graphite\graphite.snk">

@@ -21,13 +21,13 @@ namespace Graphite.System.Test
         public void ReportValue_Retrieves_a_value()
         {
             //given
-            AppPoolListener listener = new AppPoolListener("DefaultAppPool", "Process", "Working Set", new AppCmdCounterNameProvider());
+            AppPoolListener listener = new AppPoolListener("DefaultAppPool", "Process", "Working Set", new WmiCounterNameProvider());
 
             //when
             var value = listener.ReportValue();
 
             //then
-            Assert.NotNull(value);
+            Assert.True(value > 0f);
            
         }
     }
