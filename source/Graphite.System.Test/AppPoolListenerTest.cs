@@ -59,10 +59,16 @@ namespace Graphite.System.Test
             m = _counterNameProvider.Register("test", "w3wp#2");
 
             //when
+
+            //on next read we should get null, as the counter failed
             var value2 = listener.ReportValue();
+            value2.Should().Be.Null();
+
+            //on next read counter should refresh and return values
+            var value3 = listener.ReportValue();
 
             //then
-            value2.Should().Not.Be.Null();
+            value3.Should().Not.Be.Null();
 
         }
     }

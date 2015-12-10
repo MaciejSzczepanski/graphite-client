@@ -16,35 +16,46 @@ namespace Graphite.System
         readonly Dictionary<string, string> _instanceNameByPoolName = new Dictionary<string, string>();
 
 
-
         public virtual string GetCounterName(string poolName)
         {
             if (_instanceNameByPoolName.ContainsKey(poolName))
                 return _instanceNameByPoolName[poolName];
 
-            string instanceName = ProcessNameById("w3wp", GetProcessId(poolName));
+            string instanceName = GetInstanceNameFromPerfcounter(GetProcessId(poolName));
 
-            if(instanceName != null)
-                _instanceNameByPoolName.Add(poolName,instanceName);
-            
+            if (instanceName != null)
+                _instanceNameByPoolName.Add(poolName, instanceName);
+
             return instanceName;
         }
 
-        private void RefreshW3wpProcesses()
+        public void ReportInvalid(string appPoolName, string instanceName)
+        {
+            _processIdsByPoolName.Remove(appPoolName);
+            _instanceNameByPoolName.Remove(appPoolName);
+        }
+
+        private void RefreshW3WpProcesses()
+        {
+            foreach (var pair in GetW3WpProcesses())
+            {
+                if (_processIdsByPoolName.ContainsKey(pair.Item1))
+                    _processIdsByPoolName[pair.Item1] = pair.Item2;
+                else
+                    _processIdsByPoolName.Add(pair.Item1, pair.Item2);
+            }
+        }
+
+        protected virtual IEnumerable<Tuple<string, int>> GetW3WpProcesses()
         {
             ManagementObjectSearcher searcher = new ManagementObjectSearcher(WmiQuery);
             ManagementObjectCollection retObjectCollection = searcher.Get();
-            foreach (var o in retObjectCollection)
+            foreach (var retObject in retObjectCollection)
             {
-                var retObject = (ManagementObject) o;
-
                 var poolName = W3wpArgsParser.GetAppPoolName(retObject["CommandLine"].ToString());
                 int pid = Convert.ToInt32(retObject["ProcessId"]);
 
-                if (_processIdsByPoolName.ContainsKey(poolName))
-                    _processIdsByPoolName[poolName] = pid;
-                else
-                    _processIdsByPoolName.Add(poolName, pid);
+                yield return Tuple.Create(poolName, pid);
             }
         }
 
@@ -52,19 +63,19 @@ namespace Graphite.System
         {
             if (!_processIdsByPoolName.ContainsKey(appPool))
             {
-                RefreshW3wpProcesses();
+                RefreshW3WpProcesses();
             }
 
             return _processIdsByPoolName[appPool];
         }
 
 
-        private string ProcessNameById(string prefix, int processId)
+        protected virtual string GetInstanceNameFromPerfcounter(int processId)
         {
             var localCategory = new PerformanceCounterCategory("Process");
 
             string[] instances = localCategory.GetInstanceNames()
-                .Where(p => p.StartsWith(prefix))
+                .Where(p => p.StartsWith("w3wp"))
                 .ToArray();
 
             foreach (string instance in instances)

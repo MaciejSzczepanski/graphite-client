@@ -52,9 +52,9 @@ namespace Graphite.System
 
                 this.Dispose(true);
 
-                this.RenewCounter();
+                //this.RenewCounter();
 
-                return null;
+                throw;
             }
         }
 

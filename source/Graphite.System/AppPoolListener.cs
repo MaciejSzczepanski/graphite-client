@@ -81,14 +81,14 @@ namespace Graphite.System
 
             try
             {
-
-
                 return this.counterListener.ReportValue(); ;
             }
             catch (InvalidOperationException)
             {
                 // counter not available.
+                _counterNameProvider.ReportInvalid(appPoolName, counterName);
                 this.counterListener = null;
+                this.counterName = null;
 
                 return null;
             }
