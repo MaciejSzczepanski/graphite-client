@@ -9,11 +9,15 @@ using Graphite.System.Perfcounters;
 
 namespace Graphite.System
 {
-    public class WmiCounterInstanceNameProvider : ICounterInstanceNameProvider
+    public class CounterInstanceNameCache
     {
-        const string WmiQuery = "select ProcessId, CommandLine from Win32_Process where Name='w3wp.exe'";
+        private readonly ICounterInstanceNameProvider _instanceNameProvider;
         readonly Dictionary<string, int?> _processIdsByPoolName = new Dictionary<string, int?>();
         readonly Dictionary<string, string> _instanceNameByPoolName = new Dictionary<string, string>();
+        public CounterInstanceNameCache(ICounterInstanceNameProvider instanceNameProvider)
+        {
+            _instanceNameProvider = instanceNameProvider;
+        }
 
 
         public virtual string GetCounterInstanceName(string poolName)
@@ -26,11 +30,24 @@ namespace Graphite.System
             string instanceName = null;
 
             if (processId.HasValue)
-                instanceName = GetInstanceNameFromPerfcounter(processId.Value);
+                instanceName = _instanceNameProvider.GetInstanceName(processId.Value);
 
             _instanceNameByPoolName.Add(poolName, instanceName);
 
             return instanceName;
+        }
+
+        private int? GetProcessId(string appPool)
+        {
+            if (!_processIdsByPoolName.ContainsKey(appPool))
+            {
+                RefreshW3WpProcesses();
+            }
+
+            if (!_processIdsByPoolName.ContainsKey(appPool))
+                _processIdsByPoolName.Add(appPool, null);
+
+            return _processIdsByPoolName[appPool];
         }
 
         public void ReportInvalid(string appPoolName, string instanceName)
@@ -47,7 +64,7 @@ namespace Graphite.System
 
         private void RefreshW3WpProcesses()
         {
-            foreach (var pair in GetW3WpProcesses())
+            foreach (var pair in _instanceNameProvider.GetW3WpProcesses())
             {
                 if (_processIdsByPoolName.ContainsKey(pair.Item1))
                     _processIdsByPoolName[pair.Item1] = pair.Item2;
@@ -55,8 +72,13 @@ namespace Graphite.System
                     _processIdsByPoolName.Add(pair.Item1, pair.Item2);
             }
         }
+    }
 
-        protected virtual IEnumerable<Tuple<string, int>> GetW3WpProcesses()
+    public class WmiCounterInstanceNameProvider : ICounterInstanceNameProvider
+    {
+        const string WmiQuery = "select ProcessId, CommandLine from Win32_Process where Name='w3wp.exe'";
+
+        public virtual IEnumerable<Tuple<string, int>> GetW3WpProcesses()
         {
             ManagementObjectSearcher searcher = new ManagementObjectSearcher(WmiQuery);
             ManagementObjectCollection retObjectCollection = searcher.Get();
@@ -69,21 +91,8 @@ namespace Graphite.System
             }
         }
 
-        private int? GetProcessId(string appPool)
-        {
-            if (!_processIdsByPoolName.ContainsKey(appPool))
-            {
-                RefreshW3WpProcesses();
-            }
-
-            if (!_processIdsByPoolName.ContainsKey(appPool))
-                _processIdsByPoolName.Add(appPool, null);
-
-            return _processIdsByPoolName[appPool];
-        }
-
-
-        protected virtual string GetInstanceNameFromPerfcounter(int processId)
+        
+        public virtual string GetInstanceName(int processId)
         {
             var localCategory = new PerformanceCounterCategory("Process");
 

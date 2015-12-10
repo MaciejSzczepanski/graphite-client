@@ -11,7 +11,7 @@ namespace Graphite.System.Test
     public class AppPoolListenerTest
     {
         private TestablePerformanceCounterFactory _counterFactory;
-        private TestableWmiCounterInstanceNameProvider _counterInstanceNameProvider;
+        private TestableCounterInstanceNameProvider _counterInstanceNameProvider;
 
         public AppPoolListenerTest()
         {
@@ -19,12 +19,12 @@ namespace Graphite.System.Test
             Assert.True(appPoolProcess != null, "A runngin IIS appool is required to run this test");
 
             _counterFactory = new TestablePerformanceCounterFactory();
-            _counterInstanceNameProvider = new TestableWmiCounterInstanceNameProvider();
+            _counterInstanceNameProvider = new TestableCounterInstanceNameProvider();
         }
 
         private AppPoolListener CreateAppPoolListener(string poolName, string categoryName, string counterName)
         {
-            return new AppPoolListener(poolName, categoryName, counterName, _counterInstanceNameProvider, _counterFactory);
+            return new AppPoolListener(poolName, categoryName, counterName, new CounterInstanceNameCache(_counterInstanceNameProvider), _counterFactory);
         }
 
         [Fact]
@@ -87,10 +87,11 @@ namespace Graphite.System.Test
                 listener.ReportValue();
             }
             
-
             //then
             _counterInstanceNameProvider.WmiQueriesCount.Should().Equal(1);
             _counterInstanceNameProvider.PerfcounterProcessScanCount.Should().Equal(0);
         }
+
+        
     }
 }

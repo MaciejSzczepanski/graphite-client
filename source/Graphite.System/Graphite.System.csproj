@@ -132,7 +132,6 @@
     <Compile Include="Configuration\EventlogListenerElementCollection.cs" />
     <Compile Include="Configuration\AppPoolElement.cs" />
     <Compile Include="Configuration\AppPoolElementCollection.cs" />
-    <Compile Include="Perfcounters\AppCmdCounterInstanceNameProvider.cs" />
     <Compile Include="EventlogListener.cs" />
     <Compile Include="Explorer.cs" />
     <Compile Include="Perfcounters\ICounterInstanceNameProvider.cs" />

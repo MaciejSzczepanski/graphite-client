@@ -8,19 +8,19 @@ namespace Graphite.System
         private readonly string appPoolName;
         private readonly string category;
         private readonly string counter;
-        private readonly ICounterInstanceNameProvider _counterInstanceNameProvider;
+        private readonly CounterInstanceNameCache _counterInstanceNameCache;
         private readonly PerformanceCounterFactory _counterFactory;
 
         private string counterInstanceName;
 
         private CounterListener counterListener;
 
-        public AppPoolListener(string appPoolName, string category, string counter, ICounterInstanceNameProvider counterInstanceNameProvider, PerformanceCounterFactory counterFactory)
+        public AppPoolListener(string appPoolName, string category, string counter, CounterInstanceNameCache counterInstanceNameCache, PerformanceCounterFactory counterFactory)
         {
             this.appPoolName = appPoolName;
             this.category = category;
             this.counter = counter;
-            _counterInstanceNameProvider = counterInstanceNameProvider;
+            _counterInstanceNameCache = counterInstanceNameCache;
             _counterFactory = counterFactory;
 
             this.LoadCounterInstanceName();
@@ -40,7 +40,7 @@ namespace Graphite.System
 
         public bool LoadCounterInstanceName()
         {
-            string newName = _counterInstanceNameProvider.GetCounterInstanceName(this.appPoolName);
+            string newName = _counterInstanceNameCache.GetCounterInstanceName(this.appPoolName);
 
             if (!string.IsNullOrEmpty(newName) && this.counterInstanceName != newName)
             {
@@ -86,7 +86,7 @@ namespace Graphite.System
             catch (InvalidOperationException)
             {
                 // counter not available.
-                _counterInstanceNameProvider.ReportInvalid(appPoolName, counterInstanceName);
+                _counterInstanceNameCache.ReportInvalid(appPoolName, counterInstanceName);
                 this.counterListener = null;
                 this.counterInstanceName = null;
 

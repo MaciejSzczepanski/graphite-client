@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Graphite.System.Perfcounters;
 
 namespace Graphite.System.Test
 {
-    public class TestableWmiCounterInstanceNameProvider : WmiCounterInstanceNameProvider
+    public class TestableCounterInstanceNameProvider : ICounterInstanceNameProvider
     {
         public Dictionary<string, string> InstanceNamesByAppPool = new Dictionary<string, string>();
         public Dictionary<string, int> ProcessIdsByAppPool = new Dictionary<string, int>();
@@ -32,7 +33,7 @@ namespace Graphite.System.Test
             return new PoolInstanceMapping() {PoolName = poolName, InstanceName = instanceName};
         }
 
-        protected override IEnumerable<Tuple<string, int>> GetW3WpProcesses()
+        public IEnumerable<Tuple<string, int>> GetW3WpProcesses()
         {
             WmiQueriesCount += 1;
             foreach (var pair in ProcessIdsByAppPool)
@@ -41,7 +42,7 @@ namespace Graphite.System.Test
             }
         }
 
-        protected override string GetInstanceNameFromPerfcounter(int processId)
+        public string GetInstanceName(int processId)
         {
             PerfcounterProcessScanCount += 1;
             var poolName = ProcessIdsByAppPool.SingleOrDefault(v => v.Value == processId).Key;

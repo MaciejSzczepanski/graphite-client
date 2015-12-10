@@ -27,7 +27,7 @@ namespace Graphite.System
 
         private bool disposed;
 
-        private ICounterInstanceNameProvider _counterInstanceNameProvider = new AppCmdCounterInstanceNameProvider();
+        private CounterInstanceNameCache _counterInstanceNameCache = new CounterInstanceNameCache(new WmiCounterInstanceNameProvider());
         private PerformanceCounterFactory _counterFactory = new PerformanceCounterFactory();
 
         public Kernel(IConfigurationContainer configuration, GraphiteSystemConfiguration systemConfiguration)
@@ -73,11 +73,11 @@ namespace Graphite.System
 
                 this.scheduler.Add(action, appPool.Interval);
 
-                
-            }
+                this.scheduler.Add(() => element.LoadCounterInstanceName(), 90);
+             }
 
             // Invalidating cache will cause all apppool counters to refresh
-            this.scheduler.Add(() => _counterInstanceNameProvider.Invalidate(), 90);
+
 
             this.scheduler.Start();
         }
@@ -152,11 +152,11 @@ namespace Graphite.System
 
             if (config.WorkingSet && string.IsNullOrEmpty(config.Counter))
             {
-                element = new AppPoolListener(config.AppPoolName, "Process", "Working Set", _counterInstanceNameProvider, _counterFactory);
+                element = new AppPoolListener(config.AppPoolName, "Process", "Working Set", _counterInstanceNameCache, _counterFactory);
             } 
             else if (!string.IsNullOrEmpty(config.Counter))
             {
-                element = new AppPoolListener(config.AppPoolName, config.Category, config.Counter, _counterInstanceNameProvider, _counterFactory);
+                element = new AppPoolListener(config.AppPoolName, config.Category, config.Counter, _counterInstanceNameCache, _counterFactory);
             }
 
             listener = element;

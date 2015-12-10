@@ -69,8 +69,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestablePerfCounter.cs" />
     <Compile Include="TestablePerformanceCounterFactory.cs" />
-    <Compile Include="TestableWmiCounterInstanceNameProvider.cs" />
-    <Compile Include="WmiCounterNameProviderTest.cs" />
+    <Compile Include="TestableCounterInstanceNameProvider.cs" />
+    <Compile Include="CounterInstanceNameCacheTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graphite.System\Graphite.System.csproj">
