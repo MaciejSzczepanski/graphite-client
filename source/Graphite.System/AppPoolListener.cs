@@ -3,7 +3,7 @@ using Graphite.System.Perfcounters;
 
 namespace Graphite.System
 {
-    public class AppPoolListener
+    public class AppPoolListener: IDisposable
     {
         private readonly string appPoolName;
         private readonly string category;
@@ -94,8 +94,11 @@ namespace Graphite.System
             }
         }
 
-     
 
-       
+        public void Dispose()
+        {
+            if(counterListener != null)
+                counterListener.Dispose();
+        }
     }
 }

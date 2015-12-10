@@ -118,6 +118,11 @@ namespace Graphite.System
                     listener.Dispose();
                 }
 
+                foreach (var listener in this.appPools)
+                {
+                    listener.Dispose();
+                }
+
                 this.disposed = true;
             }
         }
