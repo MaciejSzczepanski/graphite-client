@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 
 namespace Graphite.System.Configuration
 {
@@ -28,6 +29,17 @@ namespace Graphite.System.Configuration
         /// The XML name of the <see cref="IisConfiguration"/> property.
         /// </summary>        
         internal const string ApppoolPropertyName = "appPool";
+
+        /// <summary>
+        /// The XML name of the <see cref="InstanceNameCacheExpirationPropertyName"/> property.
+        /// </summary>        
+        internal const string InstanceNameCacheExpirationPropertyName = "instancenameCacheExpiration";
+
+
+        /// <summary>
+        /// The XML name of the <see cref="AppPoolListenerRefreshIntervalPropertyName"/> property.
+        /// </summary>        
+        internal const string AppPoolListenerRefreshIntervalPropertyName = "appPoolListenerRefreshInterval";
 
         /// <summary>
         /// Gets the W3CReadersConfiguration instance.
@@ -78,6 +90,27 @@ namespace Graphite.System.Configuration
         {
             get { return (AppPoolElementCollection)this[ApppoolPropertyName]; }
             set { base[ApppoolPropertyName] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the InstanceNameCacheExpiration configuration.
+        /// </summary>
+        [ConfigurationPropertyAttribute(InstanceNameCacheExpirationPropertyName)]
+        public int InstanceNameCacheExpiration
+        {
+            get { return Convert.ToInt32(this[InstanceNameCacheExpirationPropertyName]); }
+            set { base[InstanceNameCacheExpirationPropertyName] = value; }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the InstanceNameCacheExpiration configuration.
+        /// </summary>
+        [ConfigurationPropertyAttribute(AppPoolListenerRefreshIntervalPropertyName)]
+        public int AppPoolListenerRefreshInterval
+        {
+            get { return Convert.ToInt32(this[AppPoolListenerRefreshIntervalPropertyName]); }
+            set { base[AppPoolListenerRefreshIntervalPropertyName] = value; }
         }
     }
 }

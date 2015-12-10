@@ -6,7 +6,7 @@ namespace Graphite.System
 {
     internal class Scheduler : IDisposable
     {
-        private readonly Dictionary<short, List<Action>> actions = new Dictionary<short, List<Action>>();
+        private readonly Dictionary<int, List<Action>> actions = new Dictionary<int, List<Action>>();
 
         private Timer timer;
 
@@ -40,7 +40,7 @@ namespace Graphite.System
         /// <param name="action"></param>
         /// <param name="interval">The invocation interval in seconds.</param>
         /// <returns></returns>
-        public Scheduler Add(Action action, short interval)
+        public Scheduler Add(Action action, int interval)
         {
             if (!this.actions.ContainsKey(interval))
             {
@@ -52,7 +52,7 @@ namespace Graphite.System
             return this;
         }
 
-        public bool Remove(Action action, short interval)
+        public bool Remove(Action action, int interval)
         {
             if (!this.actions.ContainsKey(interval))
                 return false;
@@ -85,7 +85,7 @@ namespace Graphite.System
         {
             long localCounter = ++this.counter;
 
-            foreach (short interval in this.actions.Keys)
+            foreach (int interval in this.actions.Keys)
             {
                 if (localCounter % interval == 0)
                 {
