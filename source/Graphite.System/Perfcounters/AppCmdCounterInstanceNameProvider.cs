@@ -35,6 +35,11 @@ namespace Graphite.System.Perfcounters
         {
         }
 
+        public void Invalidate()
+        {
+            
+        }
+
         private string ProcessNameById(string prefix, int processId)
         {
             var localCategory = new PerformanceCounterCategory("Process");

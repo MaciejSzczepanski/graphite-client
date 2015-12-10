@@ -4,5 +4,6 @@ namespace Graphite.System.Perfcounters
     {
         string GetCounterInstanceName(string poolName);
         void ReportInvalid(string appPoolName, string instanceName);
+        void Invalidate();
     }
 }

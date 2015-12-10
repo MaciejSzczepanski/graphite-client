@@ -73,9 +73,11 @@ namespace Graphite.System
 
                 this.scheduler.Add(action, appPool.Interval);
 
-                // Reread counter instance name every 90 seconds
-                this.scheduler.Add(() => element.LoadCounterInstanceName(), 90);
+                
             }
+
+            // Invalidating cache will cause all apppool counters to refresh
+            this.scheduler.Add(() => _counterInstanceNameProvider.Invalidate(), 90);
 
             this.scheduler.Start();
         }

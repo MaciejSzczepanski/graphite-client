@@ -39,6 +39,12 @@ namespace Graphite.System
             _instanceNameByPoolName.Remove(appPoolName);
         }
 
+        public void Invalidate()
+        {
+            _processIdsByPoolName.Clear();
+            _instanceNameByPoolName.Clear();
+        }
+
         private void RefreshW3WpProcesses()
         {
             foreach (var pair in GetW3WpProcesses())
