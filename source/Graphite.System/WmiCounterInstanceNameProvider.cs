@@ -17,11 +17,25 @@ namespace Graphite.System
         public CounterInstanceNameCache(ICounterInstanceNameProvider instanceNameProvider)
         {
             _instanceNameProvider = instanceNameProvider;
+            this.Expiration = TimeSpan.MaxValue;
         }
 
+        public TimeSpan Expiration { get; set; }
+        DateTime _lastProcessListRefresh;
+
+        private bool HasExpired()
+        {
+            if (this.Expiration == TimeSpan.MaxValue)
+                return false;
+
+            return _lastProcessListRefresh.Add(Expiration) <= DateTime.UtcNow;
+        }
 
         public virtual string GetCounterInstanceName(string poolName)
         {
+            if (HasExpired())
+                Invalidate();
+            
             if (_instanceNameByPoolName.ContainsKey(poolName))
                 return _instanceNameByPoolName[poolName];
 
@@ -39,6 +53,8 @@ namespace Graphite.System
 
         private int? GetProcessId(string appPool)
         {
+          
+
             if (!_processIdsByPoolName.ContainsKey(appPool))
             {
                 RefreshW3WpProcesses();
@@ -49,6 +65,8 @@ namespace Graphite.System
 
             return _processIdsByPoolName[appPool];
         }
+
+        
 
         public void ReportInvalid(string appPoolName, string instanceName)
         {
@@ -70,6 +88,9 @@ namespace Graphite.System
                     _processIdsByPoolName[pair.Item1] = pair.Item2;
                 else
                     _processIdsByPoolName.Add(pair.Item1, pair.Item2);
+
+                _lastProcessListRefresh = DateTime.UtcNow;
+
             }
         }
     }

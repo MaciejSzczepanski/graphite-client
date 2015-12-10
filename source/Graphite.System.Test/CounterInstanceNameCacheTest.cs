@@ -1,4 +1,8 @@
-﻿using Should.Fluent;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Should;
+using Should.Fluent;
 using Xunit;
 
 namespace Graphite.System.Test
@@ -59,7 +63,7 @@ namespace Graphite.System.Test
         }
 
         [Fact]
-        public void GetCounterName_invalidates()
+        public void GetCounterName_when_reported_invalid_then_cache_is_invalidated()
         {
             //given
             var m = _provider.Register(AppPoolName, "w3wp#1");
@@ -70,6 +74,46 @@ namespace Graphite.System.Test
             _cache.ReportInvalid(AppPoolName, m.InstanceName);
 
             string instanceName2 = _cache.GetCounterInstanceName(AppPoolName);
+
+            //then
+            _provider.WmiQueriesCount.Should().Equal(2);
+        }
+
+
+        [Fact]
+        public void GetCounterName_lack_of_instancename_should_be_cached()
+        {
+
+            //when
+            string instanceName1 = _cache.GetCounterInstanceName(AppPoolName);
+
+            string instanceName2 = _cache.GetCounterInstanceName(AppPoolName);
+
+            string instanceName3 = _cache.GetCounterInstanceName(AppPoolName);
+
+            //then
+            _provider.WmiQueriesCount.Should().Equal(1);
+
+            new[] {instanceName1, instanceName2, instanceName3}.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task GetCounterName_takes_cache_expiration_into_account()
+        {
+            //given
+            var m = _provider.Register("app1", "w3wp#1");
+            _cache.Expiration = TimeSpan.FromSeconds(1);
+
+            //when
+            _cache.GetCounterInstanceName("app1");
+            _cache.GetCounterInstanceName("app1");
+            _cache.GetCounterInstanceName("app1");
+
+            await Task.Delay(1100);
+
+            _cache.GetCounterInstanceName("app1");
+            _cache.GetCounterInstanceName("app1");
+            _cache.GetCounterInstanceName("app1");
 
             //then
             _provider.WmiQueriesCount.Should().Equal(2);
