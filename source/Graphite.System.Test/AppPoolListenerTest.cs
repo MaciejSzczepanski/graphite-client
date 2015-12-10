@@ -11,7 +11,7 @@ namespace Graphite.System.Test
     public class AppPoolListenerTest
     {
         private TestablePerformanceCounterFactory _counterFactory;
-        private TestableWmiCounterNameProvider _counterNameProvider;
+        private TestableWmiCounterInstanceNameProvider _counterInstanceNameProvider;
 
         public AppPoolListenerTest()
         {
@@ -19,19 +19,19 @@ namespace Graphite.System.Test
             Assert.True(appPoolProcess != null, "A runngin IIS appool is required to run this test");
 
             _counterFactory = new TestablePerformanceCounterFactory();
-            _counterNameProvider = new TestableWmiCounterNameProvider();
+            _counterInstanceNameProvider = new TestableWmiCounterInstanceNameProvider();
         }
 
         private AppPoolListener CreateAppPoolListener(string poolName, string categoryName, string counterName)
         {
-            return new AppPoolListener(poolName, categoryName, counterName, _counterNameProvider, _counterFactory);
+            return new AppPoolListener(poolName, categoryName, counterName, _counterInstanceNameProvider, _counterFactory);
         }
 
         [Fact]
         public void ReportValue_Retrieves_a_value()
         {
             //given
-            var m = _counterNameProvider.Register("test", "w3wp#1");
+            var m = _counterInstanceNameProvider.Register("test", "w3wp#1");
             AppPoolListener listener = CreateAppPoolListener(m.PoolName, "Process", "Working Set");
 
             //when
@@ -46,7 +46,7 @@ namespace Graphite.System.Test
         public void when_instancename_has_changed_apppool_listener_should_swich_to_new_perfcounter()
         {
             //given
-            var m = _counterNameProvider.Register("test", "w3wp#1");
+            var m = _counterInstanceNameProvider.Register("test", "w3wp#1");
             
             var listener = CreateAppPoolListener(m.PoolName, "Process", "Working Set");
 
@@ -56,7 +56,7 @@ namespace Graphite.System.Test
             _counterFactory.CreatedCounters.Last().MarkAsInvalid();
 
             //pool is now in different process
-            m = _counterNameProvider.Register("test", "w3wp#2");
+            m = _counterInstanceNameProvider.Register("test", "w3wp#2");
 
             //when
 
@@ -71,7 +71,7 @@ namespace Graphite.System.Test
             value3.Should().Not.Be.Null();
 
             listener.ReportValue();
-            _counterNameProvider.WmiQueriesCount.Should().Equal(2);
+            _counterInstanceNameProvider.WmiQueriesCount.Should().Equal(2);
         }
 
 
@@ -89,8 +89,8 @@ namespace Graphite.System.Test
             
 
             //then
-            _counterNameProvider.WmiQueriesCount.Should().Equal(1);
-            _counterNameProvider.PerfcounterProcessScanCount.Should().Equal(0);
+            _counterInstanceNameProvider.WmiQueriesCount.Should().Equal(1);
+            _counterInstanceNameProvider.PerfcounterProcessScanCount.Should().Equal(0);
         }
     }
 }

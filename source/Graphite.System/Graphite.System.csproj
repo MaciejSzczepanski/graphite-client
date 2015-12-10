@@ -132,10 +132,10 @@
     <Compile Include="Configuration\EventlogListenerElementCollection.cs" />
     <Compile Include="Configuration\AppPoolElement.cs" />
     <Compile Include="Configuration\AppPoolElementCollection.cs" />
-    <Compile Include="Perfcounters\AppCmdCounterNameProvider.cs" />
+    <Compile Include="Perfcounters\AppCmdCounterInstanceNameProvider.cs" />
     <Compile Include="EventlogListener.cs" />
     <Compile Include="Explorer.cs" />
-    <Compile Include="Perfcounters\ICounterNameProvider.cs" />
+    <Compile Include="Perfcounters\ICounterInstanceNameProvider.cs" />
     <Compile Include="Inspector.cs" />
     <Compile Include="Perfcounters\IPerformanceCounter.cs" />
     <Compile Include="Kernel.cs" />
@@ -157,7 +157,7 @@
     <Compile Include="WindowsService.designer.cs">
       <DependentUpon>WindowsService.cs</DependentUpon>
     </Compile>
-    <Compile Include="WmiCounterNameProvider.cs" />
+    <Compile Include="WmiCounterInstanceNameProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Graphite\graphite.snk">

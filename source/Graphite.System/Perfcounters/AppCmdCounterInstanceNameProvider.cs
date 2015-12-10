@@ -8,9 +8,9 @@ using System.Text.RegularExpressions;
 
 namespace Graphite.System.Perfcounters
 {
-    public class AppCmdCounterNameProvider : ICounterNameProvider
+    public class AppCmdCounterInstanceNameProvider : ICounterInstanceNameProvider
     {
-        public string GetCounterName(string poolName)
+        public string GetCounterInstanceName(string poolName)
         {
             string result;
 

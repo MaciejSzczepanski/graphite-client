@@ -9,14 +9,14 @@ using Graphite.System.Perfcounters;
 
 namespace Graphite.System
 {
-    public class WmiCounterNameProvider : ICounterNameProvider
+    public class WmiCounterInstanceNameProvider : ICounterInstanceNameProvider
     {
         const string WmiQuery = "select ProcessId, CommandLine from Win32_Process where Name='w3wp.exe'";
         readonly Dictionary<string, int?> _processIdsByPoolName = new Dictionary<string, int?>();
         readonly Dictionary<string, string> _instanceNameByPoolName = new Dictionary<string, string>();
 
 
-        public virtual string GetCounterName(string poolName)
+        public virtual string GetCounterInstanceName(string poolName)
         {
             if (_instanceNameByPoolName.ContainsKey(poolName))
                 return _instanceNameByPoolName[poolName];

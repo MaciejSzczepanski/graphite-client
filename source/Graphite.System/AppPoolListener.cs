@@ -8,22 +8,22 @@ namespace Graphite.System
         private readonly string appPoolName;
         private readonly string category;
         private readonly string counter;
-        private readonly ICounterNameProvider _counterNameProvider;
+        private readonly ICounterInstanceNameProvider _counterInstanceNameProvider;
         private readonly PerformanceCounterFactory _counterFactory;
 
-        private string counterName;
+        private string counterInstanceName;
 
         private CounterListener counterListener;
 
-        public AppPoolListener(string appPoolName, string category, string counter, ICounterNameProvider counterNameProvider, PerformanceCounterFactory counterFactory)
+        public AppPoolListener(string appPoolName, string category, string counter, ICounterInstanceNameProvider counterInstanceNameProvider, PerformanceCounterFactory counterFactory)
         {
             this.appPoolName = appPoolName;
             this.category = category;
             this.counter = counter;
-            _counterNameProvider = counterNameProvider;
+            _counterInstanceNameProvider = counterInstanceNameProvider;
             _counterFactory = counterFactory;
 
-            this.LoadCounterName();
+            this.LoadCounterInstanceName();
         }
 
         public string CategoryName { get { return category; } }
@@ -38,11 +38,11 @@ namespace Graphite.System
             get { return counter; }
         }
 
-        public bool LoadCounterName()
+        public bool LoadCounterInstanceName()
         {
-            string newName = _counterNameProvider.GetCounterName(this.appPoolName);
+            string newName = _counterInstanceNameProvider.GetCounterInstanceName(this.appPoolName);
 
-            if (!string.IsNullOrEmpty(newName) && this.counterName != newName)
+            if (!string.IsNullOrEmpty(newName) && this.counterInstanceName != newName)
             {
                 if (this.counterListener != null)
                 {
@@ -51,7 +51,7 @@ namespace Graphite.System
                     this.counterListener = null;
                 }
 
-				this.counterName = newName;
+				this.counterInstanceName = newName;
 				
                 return true;
             }
@@ -62,14 +62,14 @@ namespace Graphite.System
         public float? ReportValue()
         {
             // AppPool not found -> is not started.
-            if (string.IsNullOrEmpty(this.counterName) && !LoadCounterName())
+            if (string.IsNullOrEmpty(this.counterInstanceName) && !LoadCounterInstanceName())
                 return null;
 
             if (this.counterListener == null)
             {
                 try
                 {
-                    this.counterListener = new CounterListener(category, this.counterName, counter, _counterFactory);
+                    this.counterListener = new CounterListener(category, this.counterInstanceName, counter, _counterFactory);
                 }
                 catch (InvalidOperationException)
                 { 
@@ -86,9 +86,9 @@ namespace Graphite.System
             catch (InvalidOperationException)
             {
                 // counter not available.
-                _counterNameProvider.ReportInvalid(appPoolName, counterName);
+                _counterInstanceNameProvider.ReportInvalid(appPoolName, counterInstanceName);
                 this.counterListener = null;
-                this.counterName = null;
+                this.counterInstanceName = null;
 
                 return null;
             }

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Graphite.System.Test
 {
-    public class TestableWmiCounterNameProvider : WmiCounterNameProvider
+    public class TestableWmiCounterInstanceNameProvider : WmiCounterInstanceNameProvider
     {
         public Dictionary<string, string> InstanceNamesByAppPool = new Dictionary<string, string>();
         public Dictionary<string, int> ProcessIdsByAppPool = new Dictionary<string, int>();

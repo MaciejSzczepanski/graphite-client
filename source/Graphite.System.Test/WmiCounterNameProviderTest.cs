@@ -5,18 +5,18 @@ namespace Graphite.System.Test
     public class WmiCounterNameProviderTest
     {
         private const string AppPoolName = "DefaultAppPool";
-        private WmiCounterNameProvider _provider;
+        private WmiCounterInstanceNameProvider _provider;
 
         public WmiCounterNameProviderTest()
         {
-            _provider = new WmiCounterNameProvider();
+            _provider = new WmiCounterInstanceNameProvider();
         }
 
         [Fact]
         public void GetCounterName()
         {
             //when
-            string instanceName = _provider.GetCounterName(AppPoolName);
+            string instanceName = _provider.GetCounterInstanceName(AppPoolName);
 
             //then
             Assert.Equal("w3wp", instanceName);
@@ -26,8 +26,8 @@ namespace Graphite.System.Test
         public void GetCounterName_Gets_SameInstances()
         {
             //when
-            string instanceName1 = _provider.GetCounterName(AppPoolName);
-            string instanceName2 = _provider.GetCounterName(AppPoolName);
+            string instanceName1 = _provider.GetCounterInstanceName(AppPoolName);
+            string instanceName2 = _provider.GetCounterInstanceName(AppPoolName);
 
             //then
             Assert.Same(instanceName1,instanceName2);

@@ -1,8 +1,8 @@
 namespace Graphite.System.Perfcounters
 {
-    public interface ICounterNameProvider
+    public interface ICounterInstanceNameProvider
     {
-        string GetCounterName(string poolName);
+        string GetCounterInstanceName(string poolName);
         void ReportInvalid(string appPoolName, string instanceName);
     }
 }
