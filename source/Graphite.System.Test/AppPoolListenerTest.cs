@@ -70,6 +70,27 @@ namespace Graphite.System.Test
             //then
             value3.Should().Not.Be.Null();
 
+            listener.ReportValue();
+            _counterNameProvider.WmiQueriesCount.Should().Equal(2);
+        }
+
+
+        [Fact]
+        public void when_there_is_no_instanceName_for_a_pool_it_should_not_keep_on_scanning_system()
+        {
+            //given
+            var listener = CreateAppPoolListener("test", "Process", "Working Set");
+
+            //when
+            for (int i= 0;i<10;i++)
+            {
+                listener.ReportValue();
+            }
+            
+
+            //then
+            _counterNameProvider.WmiQueriesCount.Should().Equal(1);
+            _counterNameProvider.PerfcounterProcessScanCount.Should().Equal(0);
         }
     }
 }

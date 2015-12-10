@@ -9,7 +9,8 @@ namespace Graphite.System.Test
         public Dictionary<string, string> InstanceNamesByAppPool = new Dictionary<string, string>();
         public Dictionary<string, int> ProcessIdsByAppPool = new Dictionary<string, int>();
         private int _pidSeed = -1000;
-
+        public int WmiQueriesCount = 0;
+        public int PerfcounterProcessScanCount = 0;
 
         public PoolInstanceMapping Register(string poolName, string instanceName, int? pid=null)
         {
@@ -33,6 +34,7 @@ namespace Graphite.System.Test
 
         protected override IEnumerable<Tuple<string, int>> GetW3WpProcesses()
         {
+            WmiQueriesCount += 1;
             foreach (var pair in ProcessIdsByAppPool)
             {
                 yield return Tuple.Create(pair.Key, pair.Value);
@@ -41,6 +43,7 @@ namespace Graphite.System.Test
 
         protected override string GetInstanceNameFromPerfcounter(int processId)
         {
+            PerfcounterProcessScanCount += 1;
             var poolName = ProcessIdsByAppPool.SingleOrDefault(v => v.Value == processId).Key;
             return InstanceNamesByAppPool[poolName];
         }

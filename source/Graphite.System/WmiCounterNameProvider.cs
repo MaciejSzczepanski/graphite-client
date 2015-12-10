@@ -12,7 +12,7 @@ namespace Graphite.System
     public class WmiCounterNameProvider : ICounterNameProvider
     {
         const string WmiQuery = "select ProcessId, CommandLine from Win32_Process where Name='w3wp.exe'";
-        readonly Dictionary<string, int> _processIdsByPoolName = new Dictionary<string, int>();
+        readonly Dictionary<string, int?> _processIdsByPoolName = new Dictionary<string, int?>();
         readonly Dictionary<string, string> _instanceNameByPoolName = new Dictionary<string, string>();
 
 
@@ -21,10 +21,14 @@ namespace Graphite.System
             if (_instanceNameByPoolName.ContainsKey(poolName))
                 return _instanceNameByPoolName[poolName];
 
-            string instanceName = GetInstanceNameFromPerfcounter(GetProcessId(poolName));
 
-            if (instanceName != null)
-                _instanceNameByPoolName.Add(poolName, instanceName);
+            var processId = GetProcessId(poolName);
+            string instanceName = null;
+
+            if (processId.HasValue)
+                instanceName = GetInstanceNameFromPerfcounter(processId.Value);
+
+            _instanceNameByPoolName.Add(poolName, instanceName);
 
             return instanceName;
         }
@@ -59,12 +63,15 @@ namespace Graphite.System
             }
         }
 
-        private int GetProcessId(string appPool)
+        private int? GetProcessId(string appPool)
         {
             if (!_processIdsByPoolName.ContainsKey(appPool))
             {
                 RefreshW3WpProcesses();
             }
+
+            if (!_processIdsByPoolName.ContainsKey(appPool))
+                _processIdsByPoolName.Add(appPool, null);
 
             return _processIdsByPoolName[appPool];
         }
