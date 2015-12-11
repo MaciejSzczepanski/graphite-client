@@ -7,13 +7,17 @@
   <xs:element name="graphite.system" type="tns:Graphite.System.Configuration.GraphiteSystemConfiguration" />
   <xs:complexType name="Graphite.System.Configuration.GraphiteSystemConfiguration">
     <xs:sequence>
-      <xs:element minOccurs="0" name="instancenameCacheExpiration" type="xs:integer" />
-      <xs:element minOccurs="0" name="appPoolListenerRefreshInterval" type="xs:integer" />
+      <xs:element minOccurs="0" name="settings" type="tns:Graphite.System.Configuration.SystemSettingsElement" />
       <xs:element minOccurs="0" name="counters" type="tns:Graphite.System.Configuration.CounterListenerElementCollection" />
       <xs:element minOccurs="0" name="eventlog" type="tns:Graphite.System.Configuration.EventlogListenerElementCollection" />
       <xs:element minOccurs="0" name="poolName" type="tns:Graphite.System.Configuration.AppPoolElementCollection" />
     </xs:sequence>
   </xs:complexType>
+  <xs:complexType name="Graphite.System.Configuration.SystemSettingsElement">
+    <xs:attribute name="instancenameCacheExpiration" use="required" type="xs:integer"/>
+    <xs:attribute name="appPoolListenerRefreshInterval" use="required" type="xs:integer"/>
+  </xs:complexType>
+  
   <xs:complexType name="Graphite.System.Configuration.CounterListenerElementCollection">
     <xs:choice minOccurs="0" maxOccurs="unbounded">
       <xs:element name="add" type="tns:Graphite.System.Configuration.CounterListenerElement">

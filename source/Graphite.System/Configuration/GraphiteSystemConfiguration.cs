@@ -31,15 +31,9 @@ namespace Graphite.System.Configuration
         internal const string ApppoolPropertyName = "appPool";
 
         /// <summary>
-        /// The XML name of the <see cref="InstanceNameCacheExpirationPropertyName"/> property.
+        /// The XML name of the <see cref="SystemSettingsPropertyName"/> property.
         /// </summary>        
-        internal const string InstanceNameCacheExpirationPropertyName = "instancenameCacheExpiration";
-
-
-        /// <summary>
-        /// The XML name of the <see cref="AppPoolListenerRefreshIntervalPropertyName"/> property.
-        /// </summary>        
-        internal const string AppPoolListenerRefreshIntervalPropertyName = "appPoolListenerRefreshInterval";
+        internal const string SystemSettingsPropertyName = "settings";
 
         /// <summary>
         /// Gets the W3CReadersConfiguration instance.
@@ -60,6 +54,16 @@ namespace Graphite.System.Configuration
         public string Xmlns
         {
             get { return (string)this[XmlnsPropertyName]; }
+        }
+
+        /// <summary>
+        /// Gets or sets the Listeners configuration.
+        /// </summary>
+        [ConfigurationPropertyAttribute(SystemSettingsPropertyName)]
+        public SystemSettingsElement SystemSettings
+        {
+            get { return (SystemSettingsElement)this[SystemSettingsPropertyName]; }
+            set { base[SystemSettingsPropertyName] = value; }
         }
 
         /// <summary>
@@ -92,6 +96,22 @@ namespace Graphite.System.Configuration
             set { base[ApppoolPropertyName] = value; }
         }
 
+       
+    }
+
+    public class SystemSettingsElement : ConfigurationElement
+    {
+        /// <summary>
+        /// The XML name of the <see cref="InstanceNameCacheExpirationPropertyName"/> property.
+        /// </summary>        
+        internal const string InstanceNameCacheExpirationPropertyName = "instancenameCacheExpiration";
+
+
+        /// <summary>
+        /// The XML name of the <see cref="AppPoolListenerRefreshIntervalPropertyName"/> property.
+        /// </summary>        
+        internal const string AppPoolListenerRefreshIntervalPropertyName = "appPoolListenerRefreshInterval";
+
         /// <summary>
         /// Gets or sets the InstanceNameCacheExpiration configuration.
         /// </summary>
@@ -101,8 +121,7 @@ namespace Graphite.System.Configuration
             get { return Convert.ToInt32(this[InstanceNameCacheExpirationPropertyName]); }
             set { base[InstanceNameCacheExpirationPropertyName] = value; }
         }
-
-
+        
         /// <summary>
         /// Gets or sets the InstanceNameCacheExpiration configuration.
         /// </summary>

@@ -35,10 +35,10 @@ namespace Graphite.System
         {
             _counterInstanceNameCache = new CounterInstanceNameCache(new WmiCounterInstanceNameProvider())
             {
-                Expiration = TimeSpan.FromSeconds(systemConfiguration.InstanceNameCacheExpiration)
+                Expiration = TimeSpan.FromSeconds(systemConfiguration.SystemSettings.InstanceNameCacheExpiration)
             };
 
-            _appPoolListenerRefreshInterval = systemConfiguration.AppPoolListenerRefreshInterval;
+            _appPoolListenerRefreshInterval = systemConfiguration.SystemSettings.AppPoolListenerRefreshInterval;
 
             this.factory = new ChannelFactory(configuration.Graphite, configuration.StatsD);
 
