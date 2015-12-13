@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using NLog;
 
 namespace Graphite.System
 {
     internal class Scheduler : IDisposable
     {
+        public static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
         private readonly Dictionary<int, List<Action>> actions = new Dictionary<int, List<Action>>();
 
         private Timer timer;
@@ -87,9 +90,15 @@ namespace Graphite.System
 
             foreach (int interval in this.actions.Keys)
             {
-                if (localCounter % interval == 0)
+                if (localCounter%interval == 0)
                 {
+                    if (Logger.IsInfoEnabled)
+                        Logger.Info("Starting actions for interval: " + interval);
+
                     this.actions[interval].ForEach(a => a.Invoke());
+
+                    if (Logger.IsInfoEnabled)
+                        Logger.Info("Finished actions (count: {0}) for interval: {1}", actions[interval].Count, interval);
                 }
             }
         }

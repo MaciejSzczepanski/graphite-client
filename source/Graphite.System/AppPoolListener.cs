@@ -1,5 +1,6 @@
 ﻿using System;
 using Graphite.System.Perfcounters;
+using NLog;
 
 namespace Graphite.System
 {
@@ -10,6 +11,8 @@ namespace Graphite.System
         private readonly string counter;
         private readonly CounterInstanceNameCache _counterInstanceNameCache;
         private readonly PerformanceCounterFactory _counterFactory;
+
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         private string counterInstanceName;
 
@@ -71,8 +74,9 @@ namespace Graphite.System
                 {
                     this.counterListener = new CounterListener(category, this.counterInstanceName, counter, _counterFactory);
                 }
-                catch (InvalidOperationException)
-                { 
+                catch (InvalidOperationException ex)
+                {
+                    Logger.Warn(ex, "Failed to initialize counter: {0}, {1}, {2}", category,counterInstanceName,counter);
                 }
             }
 
@@ -83,8 +87,10 @@ namespace Graphite.System
             {
                 return this.counterListener.ReportValue(); ;
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex)
             {
+
+                Logger.Warn(ex, "Failed to ReportValue from counter: {0}, {1}, {2}", category, counter, counterInstanceName);
                 // counter not available.
                 _counterInstanceNameCache.ReportInvalid(appPoolName, counterInstanceName);
                 this.counterListener = null;

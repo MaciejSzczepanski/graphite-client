@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Graphite.System.Perfcounters;
+using NLog;
 
 namespace Graphite.System
 {
@@ -8,7 +9,8 @@ namespace Graphite.System
     {
         private readonly PerformanceCounterFactory _counterFactory;
         private IPerformanceCounter counter;
-        
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
         private bool disposed;
 
         public CounterListener(string category, string instance, string counter, PerformanceCounterFactory counterFactory)
@@ -22,11 +24,13 @@ namespace Graphite.System
                 // First call to NextValue returns always 0 -> perforn it without taking value.
                 this.counter.NextValue();
             }
-            catch (InvalidOperationException exception)
+            catch (InvalidOperationException ex)
             {
+
+                Logger.Error(ex, "Failed to ReportValue from counter: {0}, {1}, {2}", this.counter.CategoryName, this.counter.CounterName, this.counter.InstanceName);
                 throw new InvalidOperationException(
-                    exception.Message + string.Format(" (Category: '{0}', Counter: '{1}', Instance: '{2}')", category, counter, instance),
-                    exception);
+                    ex.Message + string.Format(" (Category: '{0}', Counter: '{1}', Instance: '{2}')", category, counter, instance),
+                    ex);
             }
         }
 
@@ -34,8 +38,8 @@ namespace Graphite.System
         /// Reads the next value from the performance counter.
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="System.ObjectDisposedException">The object or underlying performance counter is already disposed.</exception>
-        /// <exception cref="System.InvalidOperationException">Connection to the underlying counter was closed.</exception>
+        /// <exception cref="ObjectDisposedException">The object or underlying performance counter is already disposed.</exception>
+        /// <exception cref="InvalidOperationException">Connection to the underlying counter was closed.</exception>
         public float? ReportValue()
         {
             if (this.disposed)
@@ -46,14 +50,12 @@ namespace Graphite.System
                 // Report current value.
                 return this.counter.NextValue();
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex)
             {
                 // Connection to the underlying counter was closed.
-
+                Logger.Warn(ex, "Failed to ReportValue from counter: {0}, {1}, {2}", this.counter.CategoryName, this.counter.CounterName, this.counter.InstanceName);
                 this.Dispose(true);
-
-                //this.RenewCounter();
-
+            
                 throw;
             }
         }
