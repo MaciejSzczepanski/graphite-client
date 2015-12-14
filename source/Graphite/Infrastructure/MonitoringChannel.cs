@@ -50,6 +50,15 @@ namespace Graphite.Infrastructure
             return this.pipe.Send(formattedValue);
         }
 
+        public bool Report(string key, float value)
+        {
+            string formattedValue = this.formatter.Format(
+                this.keyBuilder(key),
+                value);
+
+            return this.pipe.Send(formattedValue);
+        }
+
         /// <summary>
         /// Reports the specifed value asynchron, returning a task.
         /// </summary>

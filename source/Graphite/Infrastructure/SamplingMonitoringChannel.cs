@@ -55,6 +55,11 @@ namespace Graphite.Infrastructure
             return this.pipe.Send(formattedValue, this.sampling);
         }
 
+        public bool Report(string key, float value)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Reports the specifed value asynchron, returning a task.
         /// </summary>

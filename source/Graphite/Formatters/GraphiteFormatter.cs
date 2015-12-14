@@ -22,6 +22,15 @@ namespace Graphite.Formatters
                 this.CalculateTimestamp(DateTime.Now));
         }
 
+        public string Format(string key, float value)
+        {
+            return string.Format(
+                "{0} {1} {2}",
+                key,
+                value,
+                this.CalculateTimestamp(DateTime.Now));
+        }
+
         private long CalculateTimestamp(DateTime dateTime)
         {
             return (long)(dateTime.ToUniversalTime() - this.unixOffset).TotalSeconds;

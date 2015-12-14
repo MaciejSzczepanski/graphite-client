@@ -16,5 +16,10 @@ namespace Graphite.Formatters
         {
             return string.Format("{0}:{1}|g", key, value);
         }
+
+        public string Format(string key, float value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

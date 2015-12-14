@@ -24,5 +24,7 @@ namespace Graphite.Formatters
         /// <param name="value">The reported value.</param>
         /// <returns>The formatted string.</returns>
         string Format(string key, long value);
+
+        string Format(string key, float value);
     }
 }

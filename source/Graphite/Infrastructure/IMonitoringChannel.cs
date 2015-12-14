@@ -15,6 +15,8 @@ namespace Graphite.Infrastructure
         /// <returns></returns>
         bool Report(string key, long value);
 
+        bool Report(string key, float value);
+
         /// <summary>
         /// Reports the specifed value asynchron, returning a task.
         /// </summary>

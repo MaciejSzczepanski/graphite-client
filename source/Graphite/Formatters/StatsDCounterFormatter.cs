@@ -17,6 +17,11 @@ namespace Graphite.Formatters
             return string.Format("{0}:{1}|c", key, magnitude);
         }
 
+        public string Format(string key, float value)
+        {
+            throw new NotImplementedException();
+        }
+
         public string Format(string key, long magnitude, float sampling)
         {
             return string.Format("{0}:{1}|c|@{2}", key, magnitude, sampling);

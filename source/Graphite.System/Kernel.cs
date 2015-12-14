@@ -165,12 +165,12 @@ namespace Graphite.System
                 }
                 catch (InvalidOperationException ex)
                 {
-                    Logger.Error(ex,"Failed to report value counter. It will retry on next interval" );
+                    Logger.Error(ex,"Failed to report value from counter. It will retry on next interval" );
                 }
 
                 if (value.HasValue)
                 {
-                    channel.Report(config.Key, (long)value.Value);
+                    channel.Report(config.Key, value.Value);
                 }
             };
         }
@@ -203,7 +203,7 @@ namespace Graphite.System
 
                     if (value.HasValue)
                     {
-                        channel.Report(config.Key, (long)value.Value);
+                        channel.Report(config.Key, value.Value);
                     }
                 }
             };
