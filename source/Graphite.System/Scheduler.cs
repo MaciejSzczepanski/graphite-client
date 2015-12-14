@@ -97,7 +97,17 @@ namespace Graphite.System
                         Logger.Info("Starting actions for interval: " + interval);
 
                     var sw = Stopwatch.StartNew();
-                    this.actions[interval].ForEach(a => a.Invoke());
+                    foreach (var a in this.actions[interval])
+                    {
+                        try
+                        {
+                            a.Invoke();
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error(e, "Failed to execute action");
+                        }
+                    }
                     sw.Stop();
 
                     if(Logger.IsWarnEnabled)

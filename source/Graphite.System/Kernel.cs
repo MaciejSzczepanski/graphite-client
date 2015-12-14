@@ -158,7 +158,15 @@ namespace Graphite.System
 
             return () =>
             {
-                float? value = listener.ReportValue();
+                float? value = null;
+                try
+                {
+                    value = listener.ReportValue();
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Logger.Error(ex,"Failed to report value counter. It will retry on next interval" );
+                }
 
                 if (value.HasValue)
                 {

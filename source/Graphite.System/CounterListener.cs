@@ -7,31 +7,45 @@ namespace Graphite.System
 {
     internal class CounterListener : IDisposable
     {
+        private readonly string _category;
+        private readonly string _instance;
+        private readonly string _counterName;
         private readonly PerformanceCounterFactory _counterFactory;
-        private IPerformanceCounter counter;
+        private IPerformanceCounter _counter;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
-        private bool disposed;
 
-        public CounterListener(string category, string instance, string counter, PerformanceCounterFactory counterFactory)
+        public CounterListener(string category, string instance, string counterName,
+            PerformanceCounterFactory counterFactory)
         {
+            _category = category;
+            _instance = instance;
+            _counterName = counterName;
             _counterFactory = counterFactory;
+            _counter = CreateCounter(category, instance, counterName);
+        }
+
+        private IPerformanceCounter CreateCounter(string category, string instance, string counterName)
+        {
+            IPerformanceCounter counter = null;
             try
             {
-                this.counter = _counterFactory.Create(category, counter, instance);
-                this.counter.Disposed += (sender, e) => this.disposed = true;
+                counter = _counterFactory.Create(category, counterName, instance);
 
                 // First call to NextValue returns always 0 -> perforn it without taking value.
-                this.counter.NextValue();
+                counter.NextValue();
             }
             catch (InvalidOperationException ex)
             {
+                string msg = string.Format("Failed to create counter: {0}, {1}, {2}", counter?.CategoryName,
+                    counter?.CounterName,
+                    counter?.InstanceName);
 
-                Logger.Error(ex, "Failed to ReportValue from counter: {0}, {1}, {2}", this.counter.CategoryName, this.counter.CounterName, this.counter.InstanceName);
-                throw new InvalidOperationException(
-                    ex.Message + string.Format(" (Category: '{0}', Counter: '{1}', Instance: '{2}')", category, counter, instance),
-                    ex);
+                Logger.Error(ex, msg);
+                throw new InvalidOperationException(msg, ex);
             }
+
+            return counter;
         }
 
         /// <summary>
@@ -42,63 +56,29 @@ namespace Graphite.System
         /// <exception cref="InvalidOperationException">Connection to the underlying counter was closed.</exception>
         public float? ReportValue()
         {
-            if (this.disposed)
-                throw new ObjectDisposedException(typeof(PerformanceCounter).Name);
+            if (_counter == null)
+                _counter = CreateCounter(_category, _instance, _counterName);
 
             try
             {
                 // Report current value.
-                return this.counter.NextValue();
+                return this._counter.NextValue();
             }
             catch (InvalidOperationException ex)
             {
                 // Connection to the underlying counter was closed.
-                Logger.Warn(ex, "Failed to ReportValue from counter: {0}, {1}, {2}", this.counter.CategoryName, this.counter.CounterName, this.counter.InstanceName);
-                this.Dispose(true);
-            
+                Logger.Warn(ex, "Failed to ReportValue from counter: {0}, {1}, {2}", this._counter.CategoryName,
+                    this._counter.CounterName, this._counter.InstanceName);
+                this._counter.Dispose();
+                this._counter = null;
+
                 throw;
             }
         }
 
         public void Dispose()
         {
-            this.Dispose(true);
-
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing && !this.disposed)
-            {
-                if (this.counter != null)
-                {
-                    this.counter.Dispose();
-                }
-
-                this.disposed = true;
-            }
-        }
-
-        protected virtual void RenewCounter()
-        {
-            this.counter = _counterFactory.Create(this.counter.CategoryName,
-                this.counter.CounterName,
-                this.counter.InstanceName) ;
-
-            this.counter.Disposed += (sender, e) => this.disposed = true;
-
-            this.disposed = false;
-
-            try
-            {
-                // First call to NextValue returns always 0 -> perforn it without taking value.
-                this.counter.NextValue();
-            }
-            catch (InvalidOperationException)
-            {
-                // nop
-            }
+            this._counter?.Dispose();
         }
     }
 }
