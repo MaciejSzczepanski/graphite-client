@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using NLog;
 
@@ -95,10 +96,15 @@ namespace Graphite.System
                     if (Logger.IsInfoEnabled)
                         Logger.Info("Starting actions for interval: " + interval);
 
+                    var sw = Stopwatch.StartNew();
                     this.actions[interval].ForEach(a => a.Invoke());
+                    sw.Stop();
+
+                    if(Logger.IsWarnEnabled)
+                        if (sw.Elapsed.TotalSeconds >= 1f){ Logger.Warn("Collecting perfcounters is slow. Duration: {0}ms (count: {1}) for interval: {2}", sw.Elapsed.TotalMilliseconds, actions[interval].Count, interval);  }
 
                     if (Logger.IsInfoEnabled)
-                        Logger.Info("Finished actions (count: {0}) for interval: {1}", actions[interval].Count, interval);
+                        Logger.Info("Finished actions. Duration: {0}ms (count: {1}) for interval: {2}", sw.Elapsed.TotalMilliseconds, actions[interval].Count, interval);
                 }
             }
         }

@@ -6,11 +6,14 @@ using Graphite.Configuration;
 using Graphite.Infrastructure;
 using Graphite.System.Configuration;
 using Graphite.System.Perfcounters;
+using NLog;
 
 namespace Graphite.System
 {
     internal class Kernel : IDisposable
     {
+        public static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
         private const short RetryInterval = 60;
 
         private readonly Scheduler scheduler;
@@ -59,8 +62,10 @@ namespace Graphite.System
 
                     this.scheduler.Add(action, listener.Interval);
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException ex)
                 {
+                    Logger.Error(ex,"Failed to create CounterListener for: {0} {1} {2}, interval {3}", listener.Category, listener.Counter, listener.Instance, listener.Interval);
+
                     if (!listener.Retry)
                         throw;
 
@@ -75,13 +80,20 @@ namespace Graphite.System
 
             foreach (var appPool in systemConfiguration.AppPool.Cast<AppPoolElement>())
             {
-                AppPoolListener element;
+                try
+                {
+                    AppPoolListener element;
 
-                var action = this.CreateReportingAction(appPool, out element);
+                    var action = this.CreateReportingAction(appPool, out element);
 
-                this.scheduler.Add(action, appPool.Interval);
+                    this.scheduler.Add(action, appPool.Interval);
 
-                this.scheduler.Add(() => element.LoadCounterInstanceName(), _appPoolListenerRefreshInterval);
+                    this.scheduler.Add(() => element.LoadCounterInstanceName(), _appPoolListenerRefreshInterval);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(string.Format("Failed to create appPoolListerner for: {0}, counter: {1} {2}", appPool.AppPoolName, appPool.Category, appPool.Counter), ex);
+                }
              }
             
             this.scheduler.Start();
@@ -232,8 +244,9 @@ namespace Graphite.System
                     
                     this.retryCreation.Remove(listener);
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException ex)
                 {
+                    Logger.Error(ex, "Failed to recreate CounterListener for: {0} {1} {2}, interval {3}", listener.Category, listener.Counter, listener.Instance, listener.Interval);
                 }
             }
 
