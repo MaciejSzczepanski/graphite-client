@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace Graphite.Formatters
 {
@@ -24,7 +25,7 @@ namespace Graphite.Formatters
 
         public string Format(string key, float value)
         {
-            return string.Format(
+            return string.Format(CultureInfo.InvariantCulture,
                 "{0} {1} {2}",
                 key,
                 value,
