@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using Should;
 using Should.Fluent;
+using Should.Fluent.Model;
 using Xunit;
 
 namespace Graphite.System.Test
@@ -17,14 +21,13 @@ namespace Graphite.System.Test
         {
             _provider = new TestableCounterInstanceNameProvider();
             _cache = new CounterInstanceNameCache(_provider);
-
         }
 
         [Fact]
         public void GetCounterName()
         {
             //given
-             var m =_provider.Register(AppPoolName, "w3wp#1");
+            var m = _provider.Register(AppPoolName, "w3wp#1");
 
             //when
             string instanceName = _cache.GetCounterInstanceName(AppPoolName);
@@ -44,7 +47,7 @@ namespace Graphite.System.Test
             string instanceName2 = _cache.GetCounterInstanceName(AppPoolName);
 
             //then
-            Assert.Same(instanceName1,instanceName2);
+            Assert.Same(instanceName1, instanceName2);
             _provider.WmiQueriesCount.Should().Equal(1);
         }
 
@@ -83,7 +86,6 @@ namespace Graphite.System.Test
         [Fact]
         public void GetCounterName_lack_of_instancename_should_be_cached()
         {
-
             //when
             string instanceName1 = _cache.GetCounterInstanceName(AppPoolName);
 
@@ -119,5 +121,44 @@ namespace Graphite.System.Test
             _provider.WmiQueriesCount.Should().Equal(2);
         }
 
+
+        [Fact]
+        public async Task GetCounterName_should_be_threadsafe()
+        {
+            //given
+            var m = _provider.Register("app1", "w3wp#1");
+            var wait = new ManualResetEventSlim();
+
+            //first get will take longer, so that we can simulate race condition
+            bool isFirst = true;
+            _provider.OnGetInstance((processId) =>
+            {
+                if (isFirst)
+                {
+                    isFirst = false;
+                    wait.Wait(1000);
+                }
+            });
+
+
+            //when
+            var t1 = Task.Run(() => _cache.GetCounterInstanceName("app1"));
+            await Task.Delay(10);
+            var t2 = Task.Run(() => _cache.GetCounterInstanceName("app1"));
+
+            //signal first task to continue
+            wait.Set();
+
+            Task.WaitAll(t1, t2);
+
+
+            //then
+            Assert.Equal(m.InstanceName, t1.Result);
+            Assert.Equal(m.InstanceName, t2.Result);
+            _provider.PerfcounterProcessScanCount.ShouldEqual(1);
+        }
+
+
+       
     }
 }

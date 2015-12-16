@@ -12,6 +12,7 @@ namespace Graphite.System.Test
         private int _pidSeed = -1000;
         public int WmiQueriesCount = 0;
         public int PerfcounterProcessScanCount = 0;
+        private Action<int> _onInstanceGetAction;
 
         public PoolInstanceMapping Register(string poolName, string instanceName, int? pid=null)
         {
@@ -44,9 +45,16 @@ namespace Graphite.System.Test
 
         public string GetInstanceName(int processId)
         {
+            _onInstanceGetAction?.Invoke(processId);
+
             PerfcounterProcessScanCount += 1;
             var poolName = ProcessIdsByAppPool.SingleOrDefault(v => v.Value == processId).Key;
             return InstanceNamesByAppPool[poolName];
+        }
+
+        public void OnGetInstance(Action<int> action)
+        {
+            _onInstanceGetAction = action;
         }
     }
 

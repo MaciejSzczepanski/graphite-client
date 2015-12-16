@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Graphite.System.Perfcounters;
 
@@ -7,8 +8,9 @@ namespace Graphite.System
     public class CounterInstanceNameCache
     {
         private readonly ICounterInstanceNameProvider _instanceNameProvider;
-        readonly Dictionary<string, int?> _processIdsByPoolName = new Dictionary<string, int?>();
-        readonly Dictionary<string, string> _instanceNameByPoolName = new Dictionary<string, string>();
+        private object _lock = new object();
+        readonly ConcurrentDictionary<string, int?> _processIdsByPoolName = new ConcurrentDictionary<string, int?>();
+        readonly ConcurrentDictionary<string, string> _instanceNameByPoolName = new ConcurrentDictionary<string, string>();
 
         public CounterInstanceNameCache(ICounterInstanceNameProvider instanceNameProvider)
         {
@@ -32,19 +34,26 @@ namespace Graphite.System
             if (HasExpired())
                 Invalidate();
 
-            if (_instanceNameByPoolName.ContainsKey(poolName))
-                return _instanceNameByPoolName[poolName];
-
-
-            var processId = GetProcessId(poolName);
             string instanceName = null;
+            if (_instanceNameByPoolName.TryGetValue(poolName, out instanceName))
+                return instanceName;
+            
+            lock (_lock)
+            {
+                if (_instanceNameByPoolName.ContainsKey(poolName))
+                    return _instanceNameByPoolName[poolName];
 
-            if (processId.HasValue)
-                instanceName = _instanceNameProvider.GetInstanceName(processId.Value);
+                var processId = GetProcessId(poolName);
+                
 
-            _instanceNameByPoolName.Add(poolName, instanceName);
+                if (processId.HasValue)
+                    instanceName = _instanceNameProvider.GetInstanceName(processId.Value);
 
-            return instanceName;
+                _instanceNameByPoolName.AddOrUpdate(poolName, instanceName, (key, existingvalue) => instanceName);
+
+                return instanceName;
+            }
+          
         }
 
         private int? GetProcessId(string appPool)
@@ -55,7 +64,7 @@ namespace Graphite.System
             }
 
             if (!_processIdsByPoolName.ContainsKey(appPool))
-                _processIdsByPoolName.Add(appPool, null);
+                _processIdsByPoolName.AddOrUpdate(appPool, (int?) null, (k,v) => (int?) null);
 
             return _processIdsByPoolName[appPool];
         }
@@ -63,14 +72,22 @@ namespace Graphite.System
 
         public void ReportInvalid(string appPoolName, string instanceName)
         {
-            _processIdsByPoolName.Remove(appPoolName);
-            _instanceNameByPoolName.Remove(appPoolName);
+            lock (_lock)
+            {
+                int? value;
+                _processIdsByPoolName.TryRemove(appPoolName, out value);
+                string removedInstanceName;
+                _instanceNameByPoolName.TryRemove(appPoolName, out removedInstanceName);
+            }
         }
 
         public void Invalidate()
         {
-            _processIdsByPoolName.Clear();
-            _instanceNameByPoolName.Clear();
+            lock (_lock)
+            {
+                _processIdsByPoolName.Clear();
+                _instanceNameByPoolName.Clear();
+            }
         }
 
         private void RefreshW3WpProcesses()
@@ -80,7 +97,7 @@ namespace Graphite.System
                 if (_processIdsByPoolName.ContainsKey(pair.Item1))
                     _processIdsByPoolName[pair.Item1] = pair.Item2;
                 else
-                    _processIdsByPoolName.Add(pair.Item1, pair.Item2);
+                    _processIdsByPoolName.AddOrUpdate(pair.Item1, pair.Item2, (k,v) => pair.Item2);
 
                 _lastProcessListRefresh = DateTime.UtcNow;
             }
