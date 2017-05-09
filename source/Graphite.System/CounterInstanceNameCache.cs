@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Graphite.System.Perfcounters;
+using NLog;
 
 namespace Graphite.System
 {
@@ -11,6 +12,8 @@ namespace Graphite.System
         private object _lock = new object();
         readonly ConcurrentDictionary<string, int?> _processIdsByPoolName = new ConcurrentDictionary<string, int?>();
         readonly ConcurrentDictionary<string, string> _instanceNameByPoolName = new ConcurrentDictionary<string, string>();
+
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         public CounterInstanceNameCache(ICounterInstanceNameProvider instanceNameProvider)
         {
@@ -92,8 +95,10 @@ namespace Graphite.System
 
         private void RefreshW3WpProcesses()
         {
+            Logger.Debug("Refreshing W3WpProcesses");
             foreach (var pair in _instanceNameProvider.GetW3WpProcesses())
             {
+                Logger.Debug($"poolName:  {pair.Item1} processid: {pair.Item2}");
                 if (_processIdsByPoolName.ContainsKey(pair.Item1))
                     _processIdsByPoolName[pair.Item1] = pair.Item2;
                 else

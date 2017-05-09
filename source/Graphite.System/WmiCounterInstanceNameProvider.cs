@@ -55,7 +55,8 @@ namespace Graphite.System
 
     public static class W3wpArgsParser
     {
-        private static readonly Regex Regex = new Regex(".+-ap\\s\"(?<poolName>\\w+)\".+", RegexOptions.Compiled);
+        //  private static readonly Regex Regex = new Regex(".+-ap\\s\"(?<poolName>[a-zA-Z_0-9\\-\\s\\.]+)\".+", RegexOptions.Compiled);
+        private static readonly Regex Regex = new Regex(".+-ap\\s\"(?<poolName>.+?)\".+", RegexOptions.Compiled);
 
         public static string GetAppPoolName(string cmd)
         {

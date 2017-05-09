@@ -66,6 +66,32 @@ namespace Graphite.System.Test
         }
 
         [Fact]
+        public void W3wpArgsParser_gets_poolname_with_minuses_from_commandline_arguments_supplied_to_w3wp_process()
+        {
+            //given
+            var testCmd = "c:\\windows\\system32\\inetsrv\\w3wp.exe -ap \"k1auth - dev\" -v \"v4.0\" -l \"webengine4.dll\" -a \\\\.\\pipe\\iisipme00d8e1a - 3d4c - 412a - bb9d - 950a951d2593 -h \"C:\\inetpub\\temp\\apppools\\k1auth-dev\\k1auth-dev.config\" - w \"\" - m 0";
+
+            //when
+            string poolName = W3wpArgsParser.GetAppPoolName(testCmd);
+
+            //then
+            Assert.Equal("k1auth - dev", poolName);
+        }
+
+        [Fact]
+        public void W3wpArgsParser_gets_poolname_with_dots_from_commandline_arguments_supplied_to_w3wp_process()
+        {
+            //given
+            var testCmd = "c:\\windows\\system32\\inetsrv\\w3wp.exe -ap \"apppool v.4.5\" -v \"v4.0\" -l \"webengine4.dll\" -a \\\\.\\pipe\\iisipme00d8e1a - 3d4c - 412a - bb9d - 950a951d2593 -h \"C:\\inetpub\\temp\\apppools\\k1auth-dev\\k1auth-dev.config\" - w \"\" - m 0";
+
+            //when
+            string poolName = W3wpArgsParser.GetAppPoolName(testCmd);
+
+            //then
+            Assert.Equal("apppool v.4.5", poolName);
+        }
+
+        [Fact]
         public void GetCounterName_when_reported_invalid_then_cache_is_invalidated()
         {
             //given
@@ -81,8 +107,7 @@ namespace Graphite.System.Test
             //then
             _provider.WmiQueriesCount.Should().Equal(2);
         }
-
-
+        
         [Fact]
         public void GetCounterName_lack_of_instancename_should_be_cached()
         {

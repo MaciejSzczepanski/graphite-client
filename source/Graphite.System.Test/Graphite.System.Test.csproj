@@ -71,6 +71,7 @@
     <Compile Include="TestablePerformanceCounterFactory.cs" />
     <Compile Include="TestableCounterInstanceNameProvider.cs" />
     <Compile Include="CounterInstanceNameCacheTest.cs" />
+    <Compile Include="WmiCounterInstanceNameProviderTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graphite.System\Graphite.System.csproj">
